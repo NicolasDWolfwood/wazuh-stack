@@ -53,11 +53,10 @@ Run the bootstrap script and it creates the required tree automatically under `$
 3. Set the host/IP values in `.env` if you do not want the defaults
 4. Replace all `CHANGE_ME_...` values in `.env` with plaintext passwords
 5. If a password contains `$`, escape it as `$$` in `.env`
-6. Set `WAZUH_CLUSTER_KEY` to a long random secret
-7. Review `WAZUH_PUBLIC_HOST`
-8. Ensure the external Docker networks `br0` and `creanet` already exist on Unraid
-9. In Unraid `Settings -> Docker`, set `Docker custom network type` to `ipvlan` for the `br0` custom IP setup
-10. Keep the `10.18.1.x` addresses reserved inside `creanet` for this stack
+6. Set `WAZUH_CLUSTER_KEY` to exactly 32 alphanumeric characters
+7. Ensure the external Docker networks `br0` and `creanet` already exist on Unraid
+8. In Unraid `Settings -> Docker`, set `Docker custom network type` to `ipvlan` for the `br0` custom IP setup
+9. Keep the `10.18.1.x` addresses reserved inside `creanet` for this stack
 
 ## Bootstrap appdata
 

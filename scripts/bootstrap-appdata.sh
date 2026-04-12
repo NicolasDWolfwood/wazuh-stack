@@ -45,7 +45,6 @@ WAZUH_MANAGER_IP="${WAZUH_MANAGER_IP:-$(require_env WAZUH_MANAGER_IP)}"
 WAZUH_INDEXER_IP="${WAZUH_INDEXER_IP:-$(require_env WAZUH_INDEXER_IP)}"
 WAZUH_DASHBOARD_IP="${WAZUH_DASHBOARD_IP:-$(require_env WAZUH_DASHBOARD_IP)}"
 WAZUH_CLUSTER_KEY="${WAZUH_CLUSTER_KEY:-$(require_env WAZUH_CLUSTER_KEY)}"
-WAZUH_PUBLIC_HOST="${WAZUH_PUBLIC_HOST:-$(require_env WAZUH_PUBLIC_HOST)}"
 INDEXER_USERNAME="${INDEXER_USERNAME:-$(require_env INDEXER_USERNAME)}"
 INDEXER_PASSWORD="${INDEXER_PASSWORD:-$(require_env INDEXER_PASSWORD)}"
 DASHBOARD_PASSWORD="${DASHBOARD_PASSWORD:-$(require_env DASHBOARD_PASSWORD)}"
@@ -85,7 +84,7 @@ chmod 0644 "${APPDATA_ROOT}/manager/etc/ossec.conf"
 render_template \
   "${ROOT_DIR}/config/wazuh_dashboard/opensearch_dashboards.yml" \
   "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml" \
-  WAZUH_PUBLIC_HOST INDEXER_USERNAME INDEXER_PASSWORD
+  INDEXER_USERNAME INDEXER_PASSWORD
 chmod 0644 "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml"
 install -m 0644 "${ROOT_DIR}/config/wazuh_indexer/opensearch.yml" \
   "${APPDATA_ROOT}/indexer/config/opensearch.yml"
@@ -96,7 +95,7 @@ mapfile -t HASHES < <("${ROOT_DIR}/scripts/generate-password-hashes.sh" \
   "${API_PASSWORD}" \
   "unused-readall-password")
 
-cat > "${APPDATA_ROOT}/indexer/config/internal_users.yml" <<EOF
+cat > "${APPDATA_ROOT}/indexer/config/opensearch-security/internal_users.yml" <<EOF
 ---
 _meta:
   type: "internalusers"
