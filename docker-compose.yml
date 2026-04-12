@@ -113,7 +113,7 @@ services:
       - ${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml:ro
       - dashboard_wazuh_config:/usr/share/wazuh-dashboard/data/wazuh/config
       - ${APPDATA_ROOT}/dashboard/custom-assets:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
-      - ${APPDATA_ROOT}/certs:/usr/share/wazuh-dashboard/certs:ro
+      - ${APPDATA_ROOT}/certs/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem:ro
 
 networks:
   br0:
