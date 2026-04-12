@@ -34,26 +34,30 @@ services:
       - "${HOST_BIND_IP}:${WAZUH_AUTH_PORT}:1515/tcp"
       - "${HOST_BIND_IP}:${WAZUH_API_PORT}:55000/tcp"
     volumes:
-      - ${APPDATA_ROOT}/manager/etc:/var/ossec/etc
+      - ${APPDATA_ROOT}/manager/api-configuration:/var/ossec/api/configuration
+      - ${APPDATA_ROOT}/manager/etc-runtime:/var/ossec/etc
+      - ${APPDATA_ROOT}/manager/etc/ossec.conf:/wazuh-config-mount/etc/ossec.conf:ro
       - ${APPDATA_ROOT}/manager/logs:/var/ossec/logs
       - ${APPDATA_ROOT}/manager/queue:/var/ossec/queue
-      - ${APPDATA_ROOT}/manager/var:/var/ossec/var
+      - ${APPDATA_ROOT}/manager/var/multigroups:/var/ossec/var/multigroups
       - ${APPDATA_ROOT}/manager/integrations:/var/ossec/integrations
-      - ${APPDATA_ROOT}/manager/active-response:/var/ossec/active-response
+      - ${APPDATA_ROOT}/manager/active-response/bin:/var/ossec/active-response/bin
       - ${APPDATA_ROOT}/manager/agentless:/var/ossec/agentless
       - ${APPDATA_ROOT}/manager/wodles:/var/ossec/wodles
       - ${APPDATA_ROOT}/manager/filebeat-etc:/etc/filebeat
       - ${APPDATA_ROOT}/manager/filebeat-var:/var/lib/filebeat
       - ${APPDATA_ROOT}/syslog-ng/logs:/var/log/remote:ro
-      - ${APPDATA_ROOT}/certs:/etc/ssl/wazuh-certs:ro
+      - ${APPDATA_ROOT}/certs/root-ca-manager.pem:/etc/ssl/root-ca.pem:ro
+      - ${APPDATA_ROOT}/certs/wazuh.manager.pem:/etc/ssl/filebeat.pem:ro
+      - ${APPDATA_ROOT}/certs/wazuh.manager-key.pem:/etc/ssl/filebeat.key:ro
     environment:
       - INDEXER_URL=https://wazuh.indexer:9200
       - INDEXER_USERNAME=${INDEXER_USERNAME}
       - INDEXER_PASSWORD=${INDEXER_PASSWORD}
       - FILEBEAT_SSL_VERIFICATION_MODE=full
-      - SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/wazuh-certs/root-ca.pem
-      - SSL_CERTIFICATE=/etc/ssl/wazuh-certs/wazuh-manager.pem
-      - SSL_KEY=/etc/ssl/wazuh-certs/wazuh-manager-key.pem
+      - SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/root-ca.pem
+      - SSL_CERTIFICATE=/etc/ssl/filebeat.pem
+      - SSL_KEY=/etc/ssl/filebeat.key
 
   wazuh.indexer:
     image: wazuh/wazuh-indexer:${WAZUH_VERSION}

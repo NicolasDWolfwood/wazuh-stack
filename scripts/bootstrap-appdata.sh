@@ -64,15 +64,17 @@ mkdir -p \
   "${APPDATA_ROOT}/dashboard/data" \
   "${APPDATA_ROOT}/indexer/config" \
   "${APPDATA_ROOT}/indexer/data" \
-  "${APPDATA_ROOT}/manager/active-response" \
+  "${APPDATA_ROOT}/manager/active-response/bin" \
   "${APPDATA_ROOT}/manager/agentless" \
+  "${APPDATA_ROOT}/manager/api-configuration" \
   "${APPDATA_ROOT}/manager/etc" \
+  "${APPDATA_ROOT}/manager/etc-runtime" \
   "${APPDATA_ROOT}/manager/filebeat-etc" \
   "${APPDATA_ROOT}/manager/filebeat-var" \
   "${APPDATA_ROOT}/manager/integrations" \
   "${APPDATA_ROOT}/manager/logs" \
   "${APPDATA_ROOT}/manager/queue" \
-  "${APPDATA_ROOT}/manager/var" \
+  "${APPDATA_ROOT}/manager/var/multigroups" \
   "${APPDATA_ROOT}/manager/wodles" \
   "${APPDATA_ROOT}/syslog-ng/config" \
   "${APPDATA_ROOT}/syslog-ng/logs"

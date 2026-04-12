@@ -1,8 +1,10 @@
 services:
   generator:
-    image: wazuh/wazuh-certs-generator:0.0.2
+    image: wazuh/wazuh-certs-generator:0.0.4
     hostname: wazuh-certs-generator
     restart: "no"
+    environment:
+      - CERT_TOOL_VERSION=4.14
     volumes:
       - ${APPDATA_ROOT}/certs:/certificates
       - ${APPDATA_ROOT}/certs/certs.yml:/config/certs.yml:ro

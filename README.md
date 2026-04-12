@@ -3,7 +3,7 @@
 This bundle is opinionated for your environment:
 
 - `creanet` is the Docker-internal network spanning `10.18.0.0/16`
-- the Wazuh containers use a fixed slice of that range: `10.18.1.0/28`
+- the Wazuh containers use fixed addresses inside that network, currently `10.18.1.x`
 - `br0` is your external LAN-backed Docker network on `192.168.1.0/24`
 - `syslog-ng` gets its own `br0` IP so it can bind `514/tcp` and `514/udp` without conflicting with the host
 - the rest of the stack stays on `creanet`
@@ -19,7 +19,7 @@ This bundle is opinionated for your environment:
 - raw logs are retained under `/mnt/user/appdata/wazuh/syslog-ng/logs`
 - logs are forwarded internally to `wazuh.manager` over TCP 514
 - `syslog-ng` is dual-homed: `br0` for syslog ingress and `creanet` for forwarding into Wazuh
-- the Wazuh containers live on `10.18.1.0/28` inside `creanet`
+- the Wazuh containers use fixed `10.18.1.x` addresses inside `creanet`
 - the dashboard is exposed on the Unraid host at `http://<unraid-lan-ip>:5601`
 - NPM proxies `https://wazuh.creative-it.nl` to `http://<unraid-lan-ip>:5601`
 
@@ -34,9 +34,11 @@ Run the bootstrap script and it creates the required tree automatically under `$
 
 - `syslog-ng/config/syslog-ng.conf`
 - `syslog-ng/logs/`
+- `manager/api-configuration/`
+- `manager/etc-runtime/`
 - `manager/etc/ossec.conf`
-- `manager/logs/`, `manager/queue/`, `manager/var/`, `manager/integrations/`
-- `manager/active-response/`, `manager/agentless/`, `manager/wodles/`
+- `manager/logs/`, `manager/queue/`, `manager/var/multigroups/`, `manager/integrations/`
+- `manager/active-response/bin/`, `manager/agentless/`, `manager/wodles/`
 - `manager/filebeat-etc/`, `manager/filebeat-var/`
 - `indexer/config/opensearch.yml`
 - `indexer/config/internal_users.yml`
@@ -58,7 +60,7 @@ Run the bootstrap script and it creates the required tree automatically under `$
 7. Review `WAZUH_PUBLIC_HOST`
 8. Ensure the external Docker networks `br0` and `creanet` already exist on Unraid
 9. In Unraid `Settings -> Docker`, set `Docker custom network type` to `ipvlan` for the `br0` custom IP setup
-10. Keep the `10.18.1.0/28` addresses reserved inside `creanet` for this stack
+10. Keep the `10.18.1.x` addresses reserved inside `creanet` for this stack
 
 ## Bootstrap appdata
 
