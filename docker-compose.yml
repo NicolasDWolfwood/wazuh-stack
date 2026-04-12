@@ -1,0 +1,113 @@
+services:
+  syslog-ng:
+    image: lscr.io/linuxserver/syslog-ng:latest
+    container_name: syslog-ng
+    hostname: syslog-ng
+    restart: unless-stopped
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=${TZ}
+    networks:
+      br0:
+        ipv4_address: ${SYSLOG_BR0_IP}
+      wazuh_internal:
+        ipv4_address: ${SYSLOG_NG_IP}
+    volumes:
+      - ${APPDATA_ROOT}/syslog-ng/config:/config
+      - ${APPDATA_ROOT}/syslog-ng/logs:/var/log/remote
+
+  wazuh.manager:
+    image: wazuh/wazuh-manager:${WAZUH_VERSION}
+    container_name: wazuh-manager
+    hostname: wazuh.manager
+    restart: unless-stopped
+    networks:
+      wazuh_internal:
+        ipv4_address: ${WAZUH_MANAGER_IP}
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "${HOST_BIND_IP}:${WAZUH_AGENT_PORT}:1514/tcp"
+      - "${HOST_BIND_IP}:${WAZUH_AUTH_PORT}:1515/tcp"
+      - "${HOST_BIND_IP}:${WAZUH_API_PORT}:55000/tcp"
+    volumes:
+      - ${APPDATA_ROOT}/manager/etc:/var/ossec/etc
+      - ${APPDATA_ROOT}/manager/logs:/var/ossec/logs
+      - ${APPDATA_ROOT}/manager/queue:/var/ossec/queue
+      - ${APPDATA_ROOT}/manager/var:/var/ossec/var
+      - ${APPDATA_ROOT}/manager/integrations:/var/ossec/integrations
+      - ${APPDATA_ROOT}/manager/active-response:/var/ossec/active-response
+      - ${APPDATA_ROOT}/manager/agentless:/var/ossec/agentless
+      - ${APPDATA_ROOT}/manager/wodles:/var/ossec/wodles
+      - ${APPDATA_ROOT}/manager/filebeat-etc:/etc/filebeat
+      - ${APPDATA_ROOT}/manager/filebeat-var:/var/lib/filebeat
+      - ${APPDATA_ROOT}/syslog-ng/logs:/var/log/remote:ro
+      - ${APPDATA_ROOT}/certs:/etc/ssl/wazuh-certs:ro
+    environment:
+      - INDEXER_URL=https://wazuh.indexer:9200
+      - INDEXER_USERNAME=${INDEXER_USERNAME}
+      - INDEXER_PASSWORD=${INDEXER_PASSWORD}
+      - FILEBEAT_SSL_VERIFICATION_MODE=full
+      - SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/wazuh-certs/root-ca.pem
+      - SSL_CERTIFICATE=/etc/ssl/wazuh-certs/wazuh-manager.pem
+      - SSL_KEY=/etc/ssl/wazuh-certs/wazuh-manager-key.pem
+
+  wazuh.indexer:
+    image: wazuh/wazuh-indexer:${WAZUH_VERSION}
+    container_name: wazuh-indexer
+    hostname: wazuh.indexer
+    restart: unless-stopped
+    networks:
+      wazuh_internal:
+        ipv4_address: ${WAZUH_INDEXER_IP}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    environment:
+      - OPENSEARCH_JAVA_OPTS=-Xms${INDEXER_HEAP} -Xmx${INDEXER_HEAP}
+    volumes:
+      - ${APPDATA_ROOT}/indexer/config:/usr/share/wazuh-indexer/config:ro
+      - ${APPDATA_ROOT}/indexer/data:/var/lib/wazuh-indexer
+      - ${APPDATA_ROOT}/certs:/usr/share/wazuh-indexer/certs:ro
+
+  wazuh.dashboard:
+    image: wazuh/wazuh-dashboard:${WAZUH_VERSION}
+    container_name: wazuh-dashboard
+    hostname: wazuh.dashboard
+    restart: unless-stopped
+    depends_on:
+      - wazuh.indexer
+      - wazuh.manager
+    networks:
+      wazuh_internal:
+        ipv4_address: ${WAZUH_DASHBOARD_IP}
+    environment:
+      - INDEXER_USERNAME=${INDEXER_USERNAME}
+      - INDEXER_PASSWORD=${INDEXER_PASSWORD}
+      - WAZUH_API_URL=https://wazuh.manager
+      - DASHBOARD_USERNAME=${DASHBOARD_USERNAME}
+      - DASHBOARD_PASSWORD=${DASHBOARD_PASSWORD}
+      - API_USERNAME=${API_USERNAME}
+      - API_PASSWORD=${API_PASSWORD}
+    ports:
+      - "${HOST_BIND_IP}:${DASHBOARD_PORT}:5601/tcp"
+    volumes:
+      - ${APPDATA_ROOT}/dashboard/config:/usr/share/wazuh-dashboard/config:ro
+      - ${APPDATA_ROOT}/dashboard/data:/usr/share/wazuh-dashboard/data
+      - ${APPDATA_ROOT}/dashboard/custom-assets:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
+      - ${APPDATA_ROOT}/certs:/usr/share/wazuh-dashboard/certs:ro
+
+networks:
+  br0:
+    external: true
+    name: ${BR0_NETWORK_NAME}
+  wazuh_internal:
+    external: true
+    name: ${CREANET_NETWORK_NAME}

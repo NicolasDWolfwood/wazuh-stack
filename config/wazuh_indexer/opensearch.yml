@@ -1,0 +1,34 @@
+cluster.name: wazuh-cluster
+node.name: wazuh.indexer
+network.host: 0.0.0.0
+http.port: 9200
+discovery.type: single-node
+
+plugins.security.ssl.transport.pemcert_filepath: certs/wazuh.indexer.pem
+plugins.security.ssl.transport.pemkey_filepath: certs/wazuh.indexer-key.pem
+plugins.security.ssl.transport.pemtrustedcas_filepath: certs/root-ca.pem
+plugins.security.ssl.http.enabled: true
+plugins.security.ssl.http.pemcert_filepath: certs/wazuh.indexer.pem
+plugins.security.ssl.http.pemkey_filepath: certs/wazuh.indexer-key.pem
+plugins.security.ssl.http.pemtrustedcas_filepath: certs/root-ca.pem
+
+plugins.security.allow_default_init_securityindex: true
+plugins.security.authcz.admin_dn:
+  - "CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US"
+plugins.security.nodes_dn:
+  - "CN=wazuh.indexer,OU=Wazuh,O=Wazuh,L=California,C=US"
+plugins.security.restapi.roles_enabled:
+  - all_access
+  - security_rest_api_access
+
+plugins.security.system_indices.enabled: true
+plugins.security.system_indices.indices:
+  - ".opensearch-observability"
+  - ".opendistro-alerting-config"
+  - ".opendistro-alerting-alert*"
+  - ".opendistro-anomaly-results*"
+  - ".opendistro-anomaly-detector*"
+  - ".opendistro-reports-*"
+  - ".opensearch-notifications-*"
+  - ".opensearch-notebooks"
+  - ".opensearch-asynchronous-search-response*"
