@@ -10,5 +10,3 @@ server.ssl.enabled: false
 
 opensearch.username: "${INDEXER_USERNAME}"
 opensearch.password: "${INDEXER_PASSWORD}"
-
-wazuh.monitoring.enabled: true
