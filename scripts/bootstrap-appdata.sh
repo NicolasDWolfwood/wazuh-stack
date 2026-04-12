@@ -60,15 +60,13 @@ mkdir -p \
   "${APPDATA_ROOT}/certs" \
   "${APPDATA_ROOT}/dashboard/config" \
   "${APPDATA_ROOT}/dashboard/custom-assets" \
-  "${APPDATA_ROOT}/dashboard/data/wazuh/config" \
-  "${APPDATA_ROOT}/dashboard/data" \
   "${APPDATA_ROOT}/indexer/config" \
+  "${APPDATA_ROOT}/indexer/config/opensearch-security" \
   "${APPDATA_ROOT}/indexer/data" \
   "${APPDATA_ROOT}/manager/active-response/bin" \
   "${APPDATA_ROOT}/manager/agentless" \
   "${APPDATA_ROOT}/manager/api-configuration" \
   "${APPDATA_ROOT}/manager/etc" \
-  "${APPDATA_ROOT}/manager/etc-runtime" \
   "${APPDATA_ROOT}/manager/filebeat-etc" \
   "${APPDATA_ROOT}/manager/filebeat-var" \
   "${APPDATA_ROOT}/manager/integrations" \
@@ -89,11 +87,6 @@ render_template \
   "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml" \
   WAZUH_PUBLIC_HOST INDEXER_USERNAME INDEXER_PASSWORD
 chmod 0644 "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml"
-render_template \
-  "${ROOT_DIR}/config/wazuh_dashboard/wazuh.yml" \
-  "${APPDATA_ROOT}/dashboard/data/wazuh/config/wazuh.yml" \
-  API_USERNAME API_PASSWORD
-chmod 0644 "${APPDATA_ROOT}/dashboard/data/wazuh/config/wazuh.yml"
 install -m 0644 "${ROOT_DIR}/config/wazuh_indexer/opensearch.yml" \
   "${APPDATA_ROOT}/indexer/config/opensearch.yml"
 
@@ -128,6 +121,8 @@ wazuh-wui:
     - "admin"
   description: "Wazuh dashboard API user"
 EOF
+
+chmod 0644 "${APPDATA_ROOT}/indexer/config/opensearch-security/internal_users.yml"
 
 cat > "${APPDATA_ROOT}/certs/certs.yml" <<EOF
 nodes:

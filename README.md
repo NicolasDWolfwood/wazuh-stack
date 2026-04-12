@@ -35,17 +35,14 @@ Run the bootstrap script and it creates the required tree automatically under `$
 - `syslog-ng/config/syslog-ng.conf`
 - `syslog-ng/logs/`
 - `manager/api-configuration/`
-- `manager/etc-runtime/`
 - `manager/etc/ossec.conf`
 - `manager/logs/`, `manager/queue/`, `manager/var/multigroups/`, `manager/integrations/`
 - `manager/active-response/bin/`, `manager/agentless/`, `manager/wodles/`
 - `manager/filebeat-etc/`, `manager/filebeat-var/`
 - `indexer/config/opensearch.yml`
-- `indexer/config/internal_users.yml`
+- `indexer/config/opensearch-security/internal_users.yml`
 - `indexer/data/`
 - `dashboard/config/opensearch_dashboards.yml`
-- `dashboard/data/wazuh/config/wazuh.yml`
-- `dashboard/data/`
 - `dashboard/custom-assets/`
 - `certs/certs.yml`
 
@@ -73,7 +70,7 @@ The bootstrap script:
 - creates the appdata directory tree
 - copies the static config files into place
 - renders `manager/etc/ossec.conf` with the cluster key from `.env`
-- renders the dashboard config files with the host name and credentials from `.env`
+- renders `dashboard/config/opensearch_dashboards.yml` from `.env`
 - generates `internal_users.yml` from the passwords in `.env`
 - generates `certs.yml` from the fixed IPs in `.env`
 
