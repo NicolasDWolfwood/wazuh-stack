@@ -15,6 +15,25 @@ require_env() {
   printf '%s' "${value}"
 }
 
+escape_sed_replacement() {
+  printf '%s' "$1" | sed -e 's/[\/&|\\]/\\&/g'
+}
+
+render_template() {
+  local template="$1"
+  local output="$2"
+  shift 2
+
+  local args=()
+  local key replacement
+  for key in "$@"; do
+    replacement="$(escape_sed_replacement "${!key}")"
+    args+=(-e "s|\${${key}}|${replacement}|g")
+  done
+
+  sed "${args[@]}" "${template}" > "${output}"
+}
+
 if [[ ! -f "${ENV_FILE}" ]]; then
   echo "Missing ${ENV_FILE}" >&2
   exit 1
@@ -26,8 +45,11 @@ WAZUH_MANAGER_IP="${WAZUH_MANAGER_IP:-$(require_env WAZUH_MANAGER_IP)}"
 WAZUH_INDEXER_IP="${WAZUH_INDEXER_IP:-$(require_env WAZUH_INDEXER_IP)}"
 WAZUH_DASHBOARD_IP="${WAZUH_DASHBOARD_IP:-$(require_env WAZUH_DASHBOARD_IP)}"
 WAZUH_CLUSTER_KEY="${WAZUH_CLUSTER_KEY:-$(require_env WAZUH_CLUSTER_KEY)}"
+WAZUH_PUBLIC_HOST="${WAZUH_PUBLIC_HOST:-$(require_env WAZUH_PUBLIC_HOST)}"
+INDEXER_USERNAME="${INDEXER_USERNAME:-$(require_env INDEXER_USERNAME)}"
 INDEXER_PASSWORD="${INDEXER_PASSWORD:-$(require_env INDEXER_PASSWORD)}"
 DASHBOARD_PASSWORD="${DASHBOARD_PASSWORD:-$(require_env DASHBOARD_PASSWORD)}"
+API_USERNAME="${API_USERNAME:-$(require_env API_USERNAME)}"
 API_PASSWORD="${API_PASSWORD:-$(require_env API_PASSWORD)}"
 
 INDEXER_PASSWORD="${INDEXER_PASSWORD//\$\$/\$}"
@@ -38,6 +60,7 @@ mkdir -p \
   "${APPDATA_ROOT}/certs" \
   "${APPDATA_ROOT}/dashboard/config" \
   "${APPDATA_ROOT}/dashboard/custom-assets" \
+  "${APPDATA_ROOT}/dashboard/data/wazuh/config" \
   "${APPDATA_ROOT}/dashboard/data" \
   "${APPDATA_ROOT}/indexer/config" \
   "${APPDATA_ROOT}/indexer/data" \
@@ -56,13 +79,19 @@ mkdir -p \
 
 install -m 0644 "${ROOT_DIR}/config/syslog-ng/syslog-ng.conf" \
   "${APPDATA_ROOT}/syslog-ng/config/syslog-ng.conf"
-sed "s/CHANGE_ME_WAZUH_CLUSTER_KEY/${WAZUH_CLUSTER_KEY}/g" \
+sed "s|CHANGE_ME_WAZUH_CLUSTER_KEY|$(escape_sed_replacement "${WAZUH_CLUSTER_KEY}")|g" \
   "${ROOT_DIR}/config/wazuh_cluster/ossec.conf" > "${APPDATA_ROOT}/manager/etc/ossec.conf"
 chmod 0644 "${APPDATA_ROOT}/manager/etc/ossec.conf"
-install -m 0644 "${ROOT_DIR}/config/wazuh_dashboard/opensearch_dashboards.yml" \
-  "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml"
-install -m 0644 "${ROOT_DIR}/config/wazuh_dashboard/wazuh.yml" \
-  "${APPDATA_ROOT}/dashboard/config/wazuh.yml"
+render_template \
+  "${ROOT_DIR}/config/wazuh_dashboard/opensearch_dashboards.yml" \
+  "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml" \
+  WAZUH_PUBLIC_HOST INDEXER_USERNAME INDEXER_PASSWORD
+chmod 0644 "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml"
+render_template \
+  "${ROOT_DIR}/config/wazuh_dashboard/wazuh.yml" \
+  "${APPDATA_ROOT}/dashboard/data/wazuh/config/wazuh.yml" \
+  API_USERNAME API_PASSWORD
+chmod 0644 "${APPDATA_ROOT}/dashboard/data/wazuh/config/wazuh.yml"
 install -m 0644 "${ROOT_DIR}/config/wazuh_indexer/opensearch.yml" \
   "${APPDATA_ROOT}/indexer/config/opensearch.yml"
 

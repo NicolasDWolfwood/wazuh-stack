@@ -42,7 +42,7 @@ Run the bootstrap script and it creates the required tree automatically under `$
 - `indexer/config/internal_users.yml`
 - `indexer/data/`
 - `dashboard/config/opensearch_dashboards.yml`
-- `dashboard/config/wazuh.yml`
+- `dashboard/data/wazuh/config/wazuh.yml`
 - `dashboard/data/`
 - `dashboard/custom-assets/`
 - `certs/certs.yml`
@@ -57,7 +57,8 @@ Run the bootstrap script and it creates the required tree automatically under `$
 6. Set `WAZUH_CLUSTER_KEY` to a long random secret
 7. Review `WAZUH_PUBLIC_HOST`
 8. Ensure the external Docker networks `br0` and `creanet` already exist on Unraid
-9. Keep the `10.18.1.0/28` addresses reserved inside `creanet` for this stack
+9. In Unraid `Settings -> Docker`, set `Docker custom network type` to `ipvlan` for the `br0` custom IP setup
+10. Keep the `10.18.1.0/28` addresses reserved inside `creanet` for this stack
 
 ## Bootstrap appdata
 
@@ -70,6 +71,7 @@ The bootstrap script:
 - creates the appdata directory tree
 - copies the static config files into place
 - renders `manager/etc/ossec.conf` with the cluster key from `.env`
+- renders the dashboard config files with the host name and credentials from `.env`
 - generates `internal_users.yml` from the passwords in `.env`
 - generates `certs.yml` from the fixed IPs in `.env`
 
