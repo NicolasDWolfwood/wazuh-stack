@@ -110,4 +110,4 @@ networks:
     name: ${BR0_NETWORK_NAME}
   wazuh_internal:
     external: true
-    name: ${CREANET_NETWORK_NAME}
+    name: ${CUSTOM_DOCKER_NETWORK}
