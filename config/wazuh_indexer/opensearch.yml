@@ -32,3 +32,7 @@ plugins.security.system_indices.indices:
   - ".opensearch-notifications-*"
   - ".opensearch-notebooks"
   - ".opensearch-asynchronous-search-response*"
+
+# OpenSearch should report a legacy-compatible main version to bundled
+# Filebeat/Beats clients that still emit Elasticsearch 7.x request shapes.
+compatibility.override_main_response_version: true

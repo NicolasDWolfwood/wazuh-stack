@@ -76,7 +76,7 @@ The bootstrap script:
 ## Generate Wazuh certificates
 
 ```bash
-./scripts/docker-compose-host.sh -f generate-indexer-certs.yml up
+./scripts/generate-certs.sh
 ```
 
 ## Start the stack

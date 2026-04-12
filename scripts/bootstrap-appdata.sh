@@ -84,7 +84,7 @@ chmod 0644 "${APPDATA_ROOT}/manager/etc/ossec.conf"
 render_template \
   "${ROOT_DIR}/config/wazuh_dashboard/opensearch_dashboards.yml" \
   "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml" \
-  INDEXER_USERNAME INDEXER_PASSWORD
+  INDEXER_USERNAME INDEXER_PASSWORD WAZUH_INDEXER_IP
 chmod 0644 "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml"
 install -m 0644 "${ROOT_DIR}/config/wazuh_indexer/opensearch.yml" \
   "${APPDATA_ROOT}/indexer/config/opensearch.yml"
