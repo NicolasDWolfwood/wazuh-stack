@@ -106,11 +106,11 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - curl -sk https://127.0.0.1:9200 >/dev/null 2>&1 || wget -qO- --no-check-certificate https://127.0.0.1:9200 >/dev/null 2>&1
+        - ps -ef | grep -q '[o]pensearch' && (netstat -lnt 2>/dev/null | grep -Eq '[.:]9200[[:space:]]' || grep -q '00000000:23F0' /proc/net/tcp || grep -q '0100007F:23F0' /proc/net/tcp || grep -q ':23F0' /proc/net/tcp6)
       interval: 20s
       timeout: 10s
       retries: 10
-      start_period: 45s
+      start_period: 75s
 
   wazuh.dashboard:
     image: wazuh/wazuh-dashboard:${WAZUH_VERSION}
@@ -142,11 +142,11 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - curl -s http://127.0.0.1:5601 >/dev/null 2>&1 || wget -qO- http://127.0.0.1:5601 >/dev/null 2>&1
+        - ps -ef | grep -Eq '[o]pensearch-dashboards|[n]ode.*/usr/share/wazuh-dashboard' && (netstat -lnt 2>/dev/null | grep -Eq '[.:]5601[[:space:]]' || grep -q '00000000:15E1' /proc/net/tcp || grep -q '0100007F:15E1' /proc/net/tcp || grep -q ':15E1' /proc/net/tcp6)
       interval: 20s
       timeout: 10s
       retries: 10
-      start_period: 45s
+      start_period: 75s
 
 networks:
   br0:

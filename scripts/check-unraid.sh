@@ -69,6 +69,15 @@ check_mode() {
   pass "${path} has mode ${expected}"
 }
 
+check_owner() {
+  local path="$1"
+  local expected="$2"
+  local actual
+  actual="$(stat -c '%u:%g' "${path}")"
+  [[ "${actual}" == "${expected}" ]] || fail "Expected owner ${expected} on ${path}, found ${actual}"
+  pass "${path} has owner ${expected}"
+}
+
 wait_for_health() {
   local name="$1"
   local timeout="$2"
@@ -183,6 +192,9 @@ check_mode "${APPDATA_ROOT}/manager/etc/ossec.conf" 600
 check_mode "${APPDATA_ROOT}/indexer/config/opensearch.yml" 600
 check_mode "${APPDATA_ROOT}/indexer/config/opensearch-security/internal_users.yml" 600
 check_mode "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.keystore" 600
+check_owner "${APPDATA_ROOT}/indexer/config/opensearch.yml" 1000:1000
+check_owner "${APPDATA_ROOT}/indexer/config/opensearch-security/internal_users.yml" 1000:1000
+check_owner "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.keystore" 1000:1000
 check_mode "${APPDATA_ROOT}/certs" 755
 check_mode "${APPDATA_ROOT}/certs/root-ca.pem" 644
 [ -f "${APPDATA_ROOT}/certs/root-ca-manager.pem" ] && check_mode "${APPDATA_ROOT}/certs/root-ca-manager.pem" 644

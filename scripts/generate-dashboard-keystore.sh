@@ -25,6 +25,8 @@ WAZUH_VERSION="${WAZUH_VERSION:-$(require_env WAZUH_VERSION)}"
 INDEXER_USERNAME="${INDEXER_USERNAME:-$(require_env INDEXER_USERNAME)}"
 INDEXER_PASSWORD="${INDEXER_PASSWORD:-$(require_env INDEXER_PASSWORD)}"
 INDEXER_PASSWORD="${INDEXER_PASSWORD//\$\$/\$}"
+KEYSTORE_UID=1000
+KEYSTORE_GID=1000
 CONFIG_DIR="${APPDATA_ROOT}/dashboard/config"
 KEYSTORE_PATH="${CONFIG_DIR}/opensearch_dashboards.keystore"
 
@@ -41,13 +43,13 @@ docker run --rm \
   -c '
     set -eu
     export OPENSEARCH_PATH_CONF=/usr/share/wazuh-dashboard/config
-    /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore create
-    printf "%s\n" "$INDEXER_USERNAME" | /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add --stdin opensearch.username
-    printf "%s\n" "$INDEXER_PASSWORD" | /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add --stdin opensearch.password
-    /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore list | grep -q "^opensearch.username$"
-    /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore list | grep -q "^opensearch.password$"
+    /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore --allow-root create
+    printf "%s\n" "$INDEXER_USERNAME" | /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore --allow-root add --stdin opensearch.username
+    printf "%s\n" "$INDEXER_PASSWORD" | /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore --allow-root add --stdin opensearch.password
+    test -s /usr/share/wazuh-dashboard/config/opensearch_dashboards.keystore
   '
 
 chmod 0600 "${KEYSTORE_PATH}"
+chown "${KEYSTORE_UID}:${KEYSTORE_GID}" "${KEYSTORE_PATH}"
 
 echo "Dashboard keystore generated at ${KEYSTORE_PATH}"

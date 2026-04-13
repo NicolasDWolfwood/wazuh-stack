@@ -55,6 +55,11 @@ INDEXER_PASSWORD="${INDEXER_PASSWORD//\$\$/\$}"
 DASHBOARD_PASSWORD="${DASHBOARD_PASSWORD//\$\$/\$}"
 API_PASSWORD="${API_PASSWORD//\$\$/\$}"
 
+INDEXER_UID=1000
+INDEXER_GID=1000
+DASHBOARD_UID=1000
+DASHBOARD_GID=1000
+
 mkdir -p \
   "${APPDATA_ROOT}/certs" \
   "${APPDATA_ROOT}/dashboard/config" \
@@ -124,6 +129,9 @@ EOF
 chmod 0600 "${APPDATA_ROOT}/manager/etc/ossec.conf"
 chmod 0600 "${APPDATA_ROOT}/indexer/config/opensearch.yml"
 chmod 0600 "${APPDATA_ROOT}/indexer/config/opensearch-security/internal_users.yml"
+chown "${INDEXER_UID}:${INDEXER_GID}" "${APPDATA_ROOT}/indexer/config/opensearch.yml"
+chown "${INDEXER_UID}:${INDEXER_GID}" "${APPDATA_ROOT}/indexer/config/opensearch-security/internal_users.yml"
+chown "${DASHBOARD_UID}:${DASHBOARD_GID}" "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml"
 
 cat > "${APPDATA_ROOT}/certs/certs.yml" <<EOF
 nodes:
