@@ -7,6 +7,3 @@ opensearch.ssl.verificationMode: full
 opensearch.ssl.certificateAuthorities: ["/usr/share/wazuh-dashboard/certs/root-ca.pem"]
 
 server.ssl.enabled: false
-
-opensearch.username: "${INDEXER_USERNAME}"
-opensearch.password: "${INDEXER_PASSWORD}"

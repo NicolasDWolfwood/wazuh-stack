@@ -84,7 +84,7 @@ chmod 0644 "${APPDATA_ROOT}/manager/etc/ossec.conf"
 render_template \
   "${ROOT_DIR}/config/wazuh_dashboard/opensearch_dashboards.yml" \
   "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml" \
-  INDEXER_USERNAME INDEXER_PASSWORD WAZUH_INDEXER_IP
+  WAZUH_INDEXER_IP
 chmod 0644 "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml"
 install -m 0644 "${ROOT_DIR}/config/wazuh_indexer/opensearch.yml" \
   "${APPDATA_ROOT}/indexer/config/opensearch.yml"
@@ -121,7 +121,9 @@ wazuh-wui:
   description: "Wazuh dashboard API user"
 EOF
 
-chmod 0644 "${APPDATA_ROOT}/indexer/config/opensearch-security/internal_users.yml"
+chmod 0600 "${APPDATA_ROOT}/manager/etc/ossec.conf"
+chmod 0600 "${APPDATA_ROOT}/indexer/config/opensearch.yml"
+chmod 0600 "${APPDATA_ROOT}/indexer/config/opensearch-security/internal_users.yml"
 
 cat > "${APPDATA_ROOT}/certs/certs.yml" <<EOF
 nodes:
@@ -135,5 +137,7 @@ nodes:
     - name: wazuh.dashboard
       ip: ${WAZUH_DASHBOARD_IP}
 EOF
+
+chmod 0644 "${APPDATA_ROOT}/certs/certs.yml"
 
 echo "Bootstrapped appdata layout under ${APPDATA_ROOT}"

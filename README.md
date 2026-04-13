@@ -11,7 +11,7 @@ This bundle is opinionated for your environment:
 - appdata is rooted under `/mnt/user/appdata/wazuh`
 - public hostname: `wazuh.creative-it.nl`
 - Nginx Proxy Manager handles public TLS
-- minimal hand work: bootstrap appdata, generate certs, bring the stack up
+- minimal hand work: bootstrap appdata, generate the dashboard keystore, generate certs, bring the stack up
 
 ## What this stack does
 
@@ -43,6 +43,7 @@ Run the bootstrap script and it creates the required tree automatically under `$
 - `indexer/config/opensearch-security/internal_users.yml`
 - `indexer/data/`
 - `dashboard/config/opensearch_dashboards.yml`
+- `dashboard/config/opensearch_dashboards.keystore`
 - `dashboard/custom-assets/`
 - `certs/certs.yml`
 
@@ -69,9 +70,15 @@ The bootstrap script:
 - creates the appdata directory tree
 - copies the static config files into place
 - renders `manager/etc/ossec.conf` with the cluster key from `.env`
-- renders `dashboard/config/opensearch_dashboards.yml` from `.env`
+- renders `dashboard/config/opensearch_dashboards.yml` without persisting indexer credentials
 - generates `internal_users.yml` from the passwords in `.env`
 - generates `certs.yml` from the fixed IPs in `.env`
+
+## Generate the dashboard keystore
+
+```bash
+./scripts/generate-dashboard-keystore.sh
+```
 
 ## Generate Wazuh certificates
 
@@ -92,6 +99,7 @@ This script:
 - validates the required `.env` values
 - checks that the external Docker networks already exist
 - bootstraps appdata
+- generates the dashboard keystore
 - generates certs
 - recreates the stack
 - runs a health check at the end
@@ -100,6 +108,18 @@ To run the health check later without redeploying:
 
 ```bash
 ./scripts/check-unraid.sh
+```
+
+For a host-originated syslog end-to-end smoke test:
+
+```bash
+./scripts/check-unraid.sh --smoke-syslog
+```
+
+To prune old raw syslog files based on `SYSLOG_RETENTION_DAYS`:
+
+```bash
+./scripts/prune-syslog-logs.sh
 ```
 
 ## Start the stack
@@ -142,6 +162,13 @@ proxy_set_header Connection "upgrade";
 proxy_read_timeout 3600;
 proxy_send_timeout 3600;
 ```
+
+## Notes
+
+- `WAZUH_API_BIND_IP` defaults to `127.0.0.1` so the API is not exposed on the LAN by default.
+- `DASHBOARD_BIND_IP`, `WAZUH_AGENT_BIND_IP`, and `WAZUH_AUTH_BIND_IP` are separate on purpose so you can tighten exposure service by service.
+- If you want Unraid itself to send syslog to the `syslog-ng` `br0` IP, keep Unraid `Host access to custom networks` enabled.
+- Schedule `./scripts/prune-syslog-logs.sh` from Unraid User Scripts or cron if you want automatic retention enforcement.
 
 ## UniFi / Ubiquiti logging target
 

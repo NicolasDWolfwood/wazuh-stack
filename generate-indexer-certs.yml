@@ -4,7 +4,7 @@ services:
     hostname: wazuh-certs-generator
     restart: "no"
     environment:
-      - CERT_TOOL_VERSION=4.14
+      - CERT_TOOL_VERSION=${WAZUH_CERT_TOOL_VERSION:-4.14}
     volumes:
       - ${APPDATA_ROOT}/certs:/certificates
       - ${APPDATA_ROOT}/certs/certs.yml:/config/certs.yml:ro

@@ -1,6 +1,6 @@
 services:
   syslog-ng:
-    image: lscr.io/linuxserver/syslog-ng:latest
+    image: lscr.io/linuxserver/syslog-ng:${SYSLOG_NG_IMAGE_TAG:-4.10.2-r1-ls189}
     container_name: syslog-ng
     hostname: syslog-ng
     restart: unless-stopped
@@ -16,6 +16,14 @@ services:
     volumes:
       - ${APPDATA_ROOT}/syslog-ng/config:/config
       - ${APPDATA_ROOT}/syslog-ng/logs:/var/log/remote
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - netstat -lntup 2>/dev/null | grep -Eq 'tcp.*[.:]514[[:space:]]' && netstat -lntup 2>/dev/null | grep -Eq 'udp.*[.:]514[[:space:]]'
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   wazuh.manager:
     image: wazuh/wazuh-manager:${WAZUH_VERSION}
@@ -30,9 +38,9 @@ services:
         soft: 65536
         hard: 65536
     ports:
-      - "${HOST_BIND_IP}:${WAZUH_AGENT_PORT}:1514/tcp"
-      - "${HOST_BIND_IP}:${WAZUH_AUTH_PORT}:1515/tcp"
-      - "${HOST_BIND_IP}:${WAZUH_API_PORT}:55000/tcp"
+      - "${WAZUH_AGENT_BIND_IP:-0.0.0.0}:${WAZUH_AGENT_PORT}:1514/tcp"
+      - "${WAZUH_AUTH_BIND_IP:-0.0.0.0}:${WAZUH_AUTH_PORT}:1515/tcp"
+      - "${WAZUH_API_BIND_IP:-127.0.0.1}:${WAZUH_API_PORT}:55000/tcp"
     volumes:
       - ${APPDATA_ROOT}/manager/api-configuration:/var/ossec/api/configuration
       - manager_etc_runtime:/var/ossec/etc
@@ -60,6 +68,14 @@ services:
       - SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/root-ca.pem
       - SSL_CERTIFICATE=/etc/ssl/filebeat.pem
       - SSL_KEY=/etc/ssl/filebeat.key
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - status="$$(/var/ossec/bin/wazuh-control status)" && echo "$$status" | grep -q '^wazuh-analysisd is running' && echo "$$status" | grep -q '^wazuh-db is running' && echo "$$status" | grep -q '^wazuh-remoted is running' && echo "$$status" | grep -q '^wazuh-execd is running' && echo "$$status" | grep -q '^wazuh-modulesd is running' && echo "$$status" | grep -q '^wazuh-apid is running'
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
 
   wazuh.indexer:
     image: wazuh/wazuh-indexer:${WAZUH_VERSION}
@@ -87,6 +103,14 @@ services:
       - ${APPDATA_ROOT}/certs/wazuh.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/wazuh.indexer-key.pem:ro
       - ${APPDATA_ROOT}/certs/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem:ro
       - ${APPDATA_ROOT}/certs/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -sk https://127.0.0.1:9200 >/dev/null 2>&1 || wget -qO- --no-check-certificate https://127.0.0.1:9200 >/dev/null 2>&1
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 45s
 
   wazuh.dashboard:
     image: wazuh/wazuh-dashboard:${WAZUH_VERSION}
@@ -94,26 +118,35 @@ services:
     hostname: wazuh.dashboard
     restart: unless-stopped
     depends_on:
-      - wazuh.indexer
-      - wazuh.manager
+      wazuh.indexer:
+        condition: service_healthy
+      wazuh.manager:
+        condition: service_healthy
     networks:
       wazuh_internal:
         ipv4_address: ${WAZUH_DASHBOARD_IP}
     environment:
-      - INDEXER_USERNAME=${INDEXER_USERNAME}
-      - INDEXER_PASSWORD=${INDEXER_PASSWORD}
       - WAZUH_API_URL=https://${WAZUH_MANAGER_IP}
       - DASHBOARD_USERNAME=${DASHBOARD_USERNAME}
       - DASHBOARD_PASSWORD=${DASHBOARD_PASSWORD}
       - API_USERNAME=${API_USERNAME}
       - API_PASSWORD=${API_PASSWORD}
     ports:
-      - "${HOST_BIND_IP}:${DASHBOARD_PORT}:5601/tcp"
+      - "${DASHBOARD_BIND_IP:-0.0.0.0}:${DASHBOARD_PORT}:5601/tcp"
     volumes:
       - ${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml:ro
+      - ${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.keystore:/usr/share/wazuh-dashboard/config/opensearch_dashboards.keystore:ro
       - dashboard_wazuh_config:/usr/share/wazuh-dashboard/data/wazuh/config
       - ${APPDATA_ROOT}/dashboard/custom-assets:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
       - ${APPDATA_ROOT}/certs/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -s http://127.0.0.1:5601 >/dev/null 2>&1 || wget -qO- http://127.0.0.1:5601 >/dev/null 2>&1
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 45s
 
 networks:
   br0:

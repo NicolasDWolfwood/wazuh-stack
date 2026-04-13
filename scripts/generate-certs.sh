@@ -25,10 +25,16 @@ CERTS_DIR="${APPDATA_ROOT}/certs"
 
 "${ROOT_DIR}/scripts/docker-compose-host.sh" -f "${ROOT_DIR}/generate-indexer-certs.yml" up
 
-# The cert generator creates restrictive permissions that prevent the dashboard
-# from traversing the mounted cert directory and reading the shared CA file.
+# Normalize cert permissions for the mounted services. Public certs and shared
+# CAs may be world-readable, but private keys must not be.
 chmod 755 "${CERTS_DIR}"
-chmod 644 "${CERTS_DIR}/root-ca.pem"
+find "${CERTS_DIR}" -maxdepth 1 -type f -name '*.pem' ! -name '*-key.pem' -exec chmod 644 {} +
+find "${CERTS_DIR}" -maxdepth 1 -type f -name '*-key.pem' -exec chmod 600 {} +
+[ -f "${CERTS_DIR}/root-ca.pem" ] && chmod 644 "${CERTS_DIR}/root-ca.pem"
+[ -f "${CERTS_DIR}/root-ca-manager.pem" ] && chmod 644 "${CERTS_DIR}/root-ca-manager.pem"
+[ -f "${CERTS_DIR}/admin-key.pem" ] && chmod 600 "${CERTS_DIR}/admin-key.pem"
+[ -f "${CERTS_DIR}/wazuh.indexer-key.pem" ] && chmod 600 "${CERTS_DIR}/wazuh.indexer-key.pem"
+[ -f "${CERTS_DIR}/wazuh.manager-key.pem" ] && chmod 600 "${CERTS_DIR}/wazuh.manager-key.pem"
 
 echo "Certificates generated under ${CERTS_DIR}"
-echo "Normalized permissions for ${CERTS_DIR} and ${CERTS_DIR}/root-ca.pem"
+echo "Normalized permissions under ${CERTS_DIR}"

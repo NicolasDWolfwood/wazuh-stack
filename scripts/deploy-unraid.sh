@@ -11,6 +11,7 @@ Usage: ./scripts/deploy-unraid.sh [--skip-check]
 What it does:
   - validates required .env values and Docker networks
   - bootstraps appdata into APPDATA_ROOT
+  - generates the dashboard keystore
   - generates Wazuh certificates
   - recreates the stack
   - runs the post-deploy health check by default
@@ -41,6 +42,11 @@ require_env() {
     fail "Missing ${key} in ${ENV_FILE}"
   fi
   printf '%s' "${value}"
+}
+
+optional_env() {
+  local key="$1"
+  awk -F= -v k="$key" '$1 == k {sub($1"=",""); print; exit}' "${ENV_FILE}"
 }
 
 SKIP_CHECK=0
@@ -74,6 +80,7 @@ for key in \
   WAZUH_INDEXER_IP \
   WAZUH_DASHBOARD_IP \
   WAZUH_CLUSTER_KEY \
+  WAZUH_VERSION \
   INDEXER_USERNAME \
   INDEXER_PASSWORD \
   DASHBOARD_USERNAME \
@@ -87,8 +94,15 @@ APPDATA_ROOT="${APPDATA_ROOT:-$(require_env APPDATA_ROOT)}"
 BR0_NETWORK_NAME="${BR0_NETWORK_NAME:-$(require_env BR0_NETWORK_NAME)}"
 CUSTOM_DOCKER_NETWORK="${CUSTOM_DOCKER_NETWORK:-$(require_env CUSTOM_DOCKER_NETWORK)}"
 WAZUH_CLUSTER_KEY="${WAZUH_CLUSTER_KEY:-$(require_env WAZUH_CLUSTER_KEY)}"
+WAZUH_VERSION="${WAZUH_VERSION:-$(require_env WAZUH_VERSION)}"
+WAZUH_CERT_TOOL_VERSION="${WAZUH_CERT_TOOL_VERSION:-$(optional_env WAZUH_CERT_TOOL_VERSION)}"
+if [[ -z "${WAZUH_CERT_TOOL_VERSION}" ]]; then
+  WAZUH_CERT_TOOL_VERSION="$(awk -F. '{print $1 "." $2}' <<<"${WAZUH_VERSION}")"
+fi
 
 [[ "${WAZUH_CLUSTER_KEY}" =~ ^[A-Za-z0-9]{32}$ ]] || fail "WAZUH_CLUSTER_KEY must be exactly 32 alphanumeric characters"
+EXPECTED_CERT_TOOL_VERSION="$(awk -F. '{print $1 "." $2}' <<<"${WAZUH_VERSION}")"
+[[ "${WAZUH_CERT_TOOL_VERSION}" == "${EXPECTED_CERT_TOOL_VERSION}" ]] || fail "WAZUH_CERT_TOOL_VERSION must match WAZUH_VERSION major.minor (${EXPECTED_CERT_TOOL_VERSION})"
 
 note "Checking Docker daemon"
 command -v docker >/dev/null 2>&1 || fail "docker is not installed"
@@ -112,6 +126,10 @@ pass "Compose renders cleanly"
 note "Bootstrapping appdata under ${APPDATA_ROOT}"
 "${ROOT_DIR}/scripts/bootstrap-appdata.sh"
 pass "Appdata bootstrapped"
+
+note "Generating dashboard keystore"
+"${ROOT_DIR}/scripts/generate-dashboard-keystore.sh"
+pass "Dashboard keystore generated"
 
 note "Generating certificates"
 "${ROOT_DIR}/scripts/generate-certs.sh"
