@@ -79,6 +79,29 @@ The bootstrap script:
 ./scripts/generate-certs.sh
 ```
 
+## Recommended Unraid operator workflow
+
+For the supported Unraid path, use the wrapper scripts instead of running each step by hand:
+
+```bash
+./scripts/deploy-unraid.sh
+```
+
+This script:
+
+- validates the required `.env` values
+- checks that the external Docker networks already exist
+- bootstraps appdata
+- generates certs
+- recreates the stack
+- runs a health check at the end
+
+To run the health check later without redeploying:
+
+```bash
+./scripts/check-unraid.sh
+```
+
 ## Start the stack
 
 ```bash
