@@ -71,7 +71,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - status="$$(/var/ossec/bin/wazuh-control status)" && echo "$$status" | grep -q '^wazuh-analysisd is running' && echo "$$status" | grep -q '^wazuh-db is running' && echo "$$status" | grep -q '^wazuh-remoted is running' && echo "$$status" | grep -q '^wazuh-execd is running' && echo "$$status" | grep -q '^wazuh-modulesd is running' && echo "$$status" | grep -q '^wazuh-apid is running'
+        - status="$$(/var/ossec/bin/wazuh-control status 2>/dev/null || true)" && echo "$$status" | grep -q '^wazuh-analysisd is running' && echo "$$status" | grep -q '^wazuh-db is running' && echo "$$status" | grep -q '^wazuh-remoted is running' && echo "$$status" | grep -q '^wazuh-execd is running' && echo "$$status" | grep -q '^wazuh-modulesd is running' && echo "$$status" | grep -q '^wazuh-apid is running'
       interval: 20s
       timeout: 10s
       retries: 10
@@ -106,7 +106,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - ps -ef | grep -q '[o]pensearch' && (netstat -lnt 2>/dev/null | grep -Eq '[.:]9200[[:space:]]' || grep -q '00000000:23F0' /proc/net/tcp || grep -q '0100007F:23F0' /proc/net/tcp || grep -q ':23F0' /proc/net/tcp6)
+        - test -r /usr/share/wazuh-indexer/config/opensearch.yml && (netstat -lnt 2>/dev/null | grep -Eq '[.:]9200[[:space:]]' || grep -q '00000000:23F0' /proc/net/tcp || grep -q '0100007F:23F0' /proc/net/tcp || grep -q ':23F0' /proc/net/tcp6)
       interval: 20s
       timeout: 10s
       retries: 10
@@ -142,7 +142,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - ps -ef | grep -Eq '[o]pensearch-dashboards|[n]ode.*/usr/share/wazuh-dashboard' && (netstat -lnt 2>/dev/null | grep -Eq '[.:]5601[[:space:]]' || grep -q '00000000:15E1' /proc/net/tcp || grep -q '0100007F:15E1' /proc/net/tcp || grep -q ':15E1' /proc/net/tcp6)
+        - test -r /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml && (netstat -lnt 2>/dev/null | grep -Eq '[.:]5601[[:space:]]' || grep -q '00000000:15E1' /proc/net/tcp || grep -q '0100007F:15E1' /proc/net/tcp || grep -q ':15E1' /proc/net/tcp6)
       interval: 20s
       timeout: 10s
       retries: 10
