@@ -231,7 +231,8 @@ grep -Eq 'udp.*[.:]514[[:space:]]' <<<"${syslog_listeners}" || fail "syslog-ng i
 pass "syslog-ng is listening on TCP/UDP 514"
 
 note "Checking Wazuh manager core daemons"
-manager_status="$(docker exec wazuh-manager /var/ossec/bin/wazuh-control status)"
+manager_status="$(timeout 20 docker exec wazuh-manager sh -lc '/var/ossec/bin/wazuh-control status 2>/dev/null || true')"
+[[ -n "${manager_status}" ]] || fail "Timed out while checking Wazuh manager daemon status"
 check_status_line wazuh-analysisd "${manager_status}"
 check_status_line wazuh-db "${manager_status}"
 check_status_line wazuh-remoted "${manager_status}"
