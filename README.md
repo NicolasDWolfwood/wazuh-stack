@@ -86,6 +86,9 @@ The bootstrap script:
 ./scripts/generate-certs.sh
 ```
 
+This helper cleans up its temporary generator container after it exits, so it
+should not leave a stale `wazuh-stack-generator-1` orphan behind.
+
 ## Recommended Unraid operator workflow
 
 For the supported Unraid path, use the wrapper scripts instead of running each step by hand:

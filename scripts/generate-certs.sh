@@ -22,8 +22,15 @@ fi
 
 APPDATA_ROOT="${APPDATA_ROOT:-$(require_env APPDATA_ROOT)}"
 CERTS_DIR="${APPDATA_ROOT}/certs"
+GENERATOR_COMPOSE="${ROOT_DIR}/generate-indexer-certs.yml"
 
-"${ROOT_DIR}/scripts/docker-compose-host.sh" -f "${ROOT_DIR}/generate-indexer-certs.yml" up
+cleanup_generator() {
+  "${ROOT_DIR}/scripts/docker-compose-host.sh" -f "${GENERATOR_COMPOSE}" down --remove-orphans --volumes >/dev/null 2>&1 || true
+}
+
+trap cleanup_generator EXIT
+
+"${ROOT_DIR}/scripts/docker-compose-host.sh" -f "${GENERATOR_COMPOSE}" up --abort-on-container-exit --exit-code-from generator --remove-orphans
 
 # Normalize cert permissions for the mounted services. Public certs and shared
 # CAs can be broader in general, but OpenSearch warns unless the files mounted
