@@ -196,13 +196,18 @@ check_owner "${APPDATA_ROOT}/indexer/config/opensearch.yml" 1000:1000
 check_owner "${APPDATA_ROOT}/indexer/config/opensearch-security/internal_users.yml" 1000:1000
 check_owner "${APPDATA_ROOT}/dashboard/config/opensearch_dashboards.keystore" 1000:1000
 check_mode "${APPDATA_ROOT}/certs" 755
-check_mode "${APPDATA_ROOT}/certs/root-ca.pem" 644
+check_mode "${APPDATA_ROOT}/certs/root-ca.pem" 600
+check_owner "${APPDATA_ROOT}/certs/root-ca.pem" 1000:1000
 [ -f "${APPDATA_ROOT}/certs/root-ca-manager.pem" ] && check_mode "${APPDATA_ROOT}/certs/root-ca-manager.pem" 644
-[ -f "${APPDATA_ROOT}/certs/admin.pem" ] && check_mode "${APPDATA_ROOT}/certs/admin.pem" 644
-[ -f "${APPDATA_ROOT}/certs/wazuh.indexer.pem" ] && check_mode "${APPDATA_ROOT}/certs/wazuh.indexer.pem" 644
+[ -f "${APPDATA_ROOT}/certs/admin.pem" ] && check_mode "${APPDATA_ROOT}/certs/admin.pem" 600
+[ -f "${APPDATA_ROOT}/certs/admin.pem" ] && check_owner "${APPDATA_ROOT}/certs/admin.pem" 1000:1000
+[ -f "${APPDATA_ROOT}/certs/wazuh.indexer.pem" ] && check_mode "${APPDATA_ROOT}/certs/wazuh.indexer.pem" 600
+[ -f "${APPDATA_ROOT}/certs/wazuh.indexer.pem" ] && check_owner "${APPDATA_ROOT}/certs/wazuh.indexer.pem" 1000:1000
 [ -f "${APPDATA_ROOT}/certs/wazuh.manager.pem" ] && check_mode "${APPDATA_ROOT}/certs/wazuh.manager.pem" 644
 [ -f "${APPDATA_ROOT}/certs/admin-key.pem" ] && check_mode "${APPDATA_ROOT}/certs/admin-key.pem" 600
+[ -f "${APPDATA_ROOT}/certs/admin-key.pem" ] && check_owner "${APPDATA_ROOT}/certs/admin-key.pem" 1000:1000
 [ -f "${APPDATA_ROOT}/certs/wazuh.indexer-key.pem" ] && check_mode "${APPDATA_ROOT}/certs/wazuh.indexer-key.pem" 600
+[ -f "${APPDATA_ROOT}/certs/wazuh.indexer-key.pem" ] && check_owner "${APPDATA_ROOT}/certs/wazuh.indexer-key.pem" 1000:1000
 [ -f "${APPDATA_ROOT}/certs/wazuh.manager-key.pem" ] && check_mode "${APPDATA_ROOT}/certs/wazuh.manager-key.pem" 600
 
 note "Checking running containers"
